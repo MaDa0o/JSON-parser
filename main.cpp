@@ -1,11 +1,13 @@
 #include<iostream>
 #include<vector>
+#include<string.h>
 
 /*
-step:1 Validation of the json file.
+1 Validation of the json file.
 ->checking opening and closing brackets including nested objects.
 ->checking the key value syntax (: in between them)
 ->checking if key-value pairs are seperated by commas or not
+->checking the validity of data types and keys
 */
 
 bool checkBrackets(std::vector<char>& v,int n){
@@ -34,13 +36,41 @@ bool checkBrackets(std::vector<char>& v,int n){
 	return false;
 }
 
+std::vector<std::string> seperatePairs(std::vector<char>& v,int n){
+	std::vector<std::string> pairs;
+	std::string buff(v.begin()+1,v.end());
+	buff.pop_back();
+	buff.push_back(',');	//adding this so it doesn't leaves the end pair
+
+	//tokenizing the string
+	char *token;
+	char *rest = buff.data();
+	while((token = strtok_r(rest, ",", &rest))){
+		std::string t = token;
+		pairs.push_back(t);
+	}
+	return pairs;
+}
+
+bool checkKeys(std::vector<char>& v,int n){
+	std::vector<std::string> kvpairs = seperatePairs(v,n);
+	return true;
+}
+
 bool checkValidity(std::vector<char>& v,int n){
 	if(n<2){
 		return false;
 	}
+	//check brackets
 	if(!checkBrackets(v,n)){
 		return false;
 	}
+	//check validity of key value pairs
+	//check validiy of keys
+	if(!checkKeys(v,n)){
+		return false;
+	}
+	//check validity of data types
 	return true;
 }
 
