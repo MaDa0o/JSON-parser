@@ -3,12 +3,26 @@
 #include<string.h>
 
 /*
-1 Validation of the json file.
+1. Validation of the json file.
 ->checking opening and closing brackets including nested objects.
 ->checking the key value syntax (: in between them)
 ->checking if key-value pairs are seperated by commas or not
 ->checking the validity of data types and keys
 */
+
+//This is a utility function
+std::string trim(const std::string& str,
+                 const std::string& whitespace = " \t")
+{
+    const auto strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    const auto strEnd = str.find_last_not_of(whitespace);
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+}
 
 bool checkBrackets(std::vector<char>& v,int n){
 	std::vector<char> stk1;
@@ -36,8 +50,9 @@ bool checkBrackets(std::vector<char>& v,int n){
 	return false;
 }
 
-std::vector<std::string> seperatePairs(std::vector<char>& v,int n){
-	std::vector<std::string> pairs;
+//This is a utility function
+std::vector<std::vector<std::string>> seperatePairs(std::vector<char>& v,int n){
+	std::vector<std::vector<std::string>> pairs;
 	std::string buff(v.begin()+1,v.end());
 	buff.pop_back();
 	buff.push_back(',');	//adding this so it doesn't leaves the end pair
@@ -47,14 +62,50 @@ std::vector<std::string> seperatePairs(std::vector<char>& v,int n){
 	char *rest = buff.data();
 	while((token = strtok_r(rest, ",", &rest))){
 		std::string t = token;
-		pairs.push_back(t);
+		std::string key = t.substr(0,t.find(':'));
+		std::string value = t.substr(t.find(':')+1);
+		pairs.push_back({key,value});
 	}
 	return pairs;
 }
 
 bool checkKeys(std::vector<char>& v,int n){
-	std::vector<std::string> kvpairs = seperatePairs(v,n);
+	std::vector<std::vector<std::string>> kvpairs = seperatePairs(v,n);
+	for(int i = 0;i<kvpairs.size();i++){
+		std::string key = kvpairs[i][0];
+		
+		std::size_t found = key.find('"');
+		if(found == std::string::npos){
+			return false;
+		}
+		key = key.substr(found+1);
+		found = key.find('"');
+		if(found == std::string::npos){
+			return false;
+		}
+	}
 	return true;
+}
+
+bool checkPairs(std::vector<char>& v,int n){
+	//Only unbranched implementation for now
+	bool semicolon = false;
+	for(int i = 0;i<n;i++){
+		if(v[i] == ':'){
+			if(semicolon){
+				return false;
+			}
+			semicolon = true;
+		}
+		if(v[i] == ','){
+			if(!semicolon){
+				return false;
+			}
+			semicolon = false;
+		}
+	}
+
+	return semicolon;
 }
 
 bool checkValidity(std::vector<char>& v,int n){
@@ -65,7 +116,10 @@ bool checkValidity(std::vector<char>& v,int n){
 	if(!checkBrackets(v,n)){
 		return false;
 	}
-	//check validity of key value pairs
+	//check validity of key value syntax
+	if(!checkPairs(v,n)){
+		return false;
+	}
 	//check validiy of keys
 	if(!checkKeys(v,n)){
 		return false;
