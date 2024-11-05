@@ -11,17 +11,34 @@
 */
 
 //This is a utility function
-std::string trim(const std::string& str,
-                 const std::string& whitespace = " \t")
+std::string trim(std::string str)
 {
-    const auto strBegin = str.find_first_not_of(whitespace);
-    if (strBegin == std::string::npos)
-        return ""; // no content
+    int i = 0;
+    int j = str.size()-1;
 
-    const auto strEnd = str.find_last_not_of(whitespace);
-    const auto strRange = strEnd - strBegin + 1;
+    while(str[i] == ' ' || str[i] == '\n' || str[i] == '\t'){
+    	i++;
+    }
+    while(str[j] == ' ' || str[j] == '\n' || str[j] == '\t'){
+    	j--;
+    }
 
-    return str.substr(strBegin, strRange);
+    return str.substr(i,j-i+1);
+}
+
+//This is a utility function
+bool isNumeric(std::string str){
+	if((str[0]-'0') >= 1 && (str[0]-'0') <= 9){}
+	else{
+		return false;
+	}
+	for(int i = 1;i<str.size();i++){
+		if((str[i]-'0') >= 0 && (str[i]-'0') <= 9){}
+	else{
+		return false;
+	}
+	}
+	return true;
 }
 
 bool checkBrackets(std::vector<char>& v,int n){
@@ -108,6 +125,23 @@ bool checkPairs(std::vector<char>& v,int n){
 	return semicolon;
 }
 
+bool checkValues(std::vector<char>& v, int n){
+	std::vector<std::vector<std::string>> kvpairs = seperatePairs(v,n);
+	
+	for(int i = 0;i<kvpairs.size();i++){
+		std::string value = kvpairs[i][1];
+		value = trim(value);
+		if(value[0]=='"' && value[value.size()-1] == '"'){
+			continue;
+		}
+		if(value == "true" || value == "false" || value == "null" || isNumeric(value)){}
+		else{
+			return false;
+		}
+	}
+	return true;
+}
+
 bool checkValidity(std::vector<char>& v,int n){
 	if(n<2){
 		return false;
@@ -124,7 +158,11 @@ bool checkValidity(std::vector<char>& v,int n){
 	if(!checkKeys(v,n)){
 		return false;
 	}
-	//check validity of data types
+	//check validity of values
+	if(!checkValues(v,n)){
+		return false;
+	}
+
 	return true;
 }
 
