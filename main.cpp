@@ -105,16 +105,19 @@ bool checkKeys(std::vector<char>& v,int n){
 }
 
 bool checkPairs(std::vector<char>& v,int n){
-	//Only unbranched implementation for now
+	//This will work even for branched object
 	bool semicolon = false;
-	for(int i = 0;i<n;i++){
+	for(int i = 1;i<n;i++){
+		if(!semicolon && v[i] == '}'){
+			semicolon = true;
+		}
 		if(v[i] == ':'){
 			if(semicolon){
 				return false;
 			}
 			semicolon = true;
 		}
-		if(v[i] == ','){
+		if(v[i] == ',' || v[i] == '{'){
 			if(!semicolon){
 				return false;
 			}
@@ -125,12 +128,41 @@ bool checkPairs(std::vector<char>& v,int n){
 	return semicolon;
 }
 
+bool checkList(std::string v, int n){
+	std::string buff(v.begin()+1,v.end());
+	buff.pop_back();
+	buff.push_back(',');	//adding this so it doesn't leaves the end pair
+
+	//tokenizing the string
+	char *token;
+	char *rest = buff.data();
+	while((token = strtok_r(rest, ",", &rest))){
+		std::string t = token;
+		if(token[0] != '"' || token[strlen(token)-1] != '"'){
+			return false;
+		}
+	}
+	return true;
+}
+
 bool checkValues(std::vector<char>& v, int n){
 	std::vector<std::vector<std::string>> kvpairs = seperatePairs(v,n);
 	
 	for(int i = 0;i<kvpairs.size();i++){
 		std::string value = kvpairs[i][1];
 		value = trim(value);
+		//if value is another object then skip because it is already checked
+		if(value[0] == '{' && value[value.size()-1] == '}'){
+			continue;
+		}
+		//if value is a list check it's validity
+		if(value[0]=='[' && value[value.size()-1] == ']'){
+			if(!checkList(value,value.size())){
+				return false;
+			}
+			continue;
+		}
+		//if value is a string then it's valid
 		if(value[0]=='"' && value[value.size()-1] == '"'){
 			continue;
 		}
