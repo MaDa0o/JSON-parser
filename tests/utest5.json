@@ -1,0 +1,17 @@
+{
+  "status": "success",
+  "data": {
+    "count": 2,
+    "items": [
+      {
+        "id": 1,
+        "value": null
+      },
+      {
+        "id": 2,
+        "value": true
+      }
+    ]
+  },
+  "message": "Operation completed"
+}
